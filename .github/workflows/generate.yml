@@ -9,7 +9,7 @@ on:
       hugoVersion:
         description: 'Hugo version to use to generate site.'
         required: false
-        default: '0.104.2'
+        default: '0.115.4'
 
 jobs:
   deploy:
@@ -26,7 +26,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Checkout legends2k.github.io
+      - name: Checkout inianv.github.io
         uses: actions/checkout@v3
         with:
           path: public
