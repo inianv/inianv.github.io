@@ -1,0 +1,49 @@
+name: Generate pages
+
+# Based on
+# https://blog.benhpoh.com/2022/01/21/trigger-another-github-repos-workflow/
+# https://lannonbr.com/blog/2019-12-09-git-commit-in-actions/
+on:
+  workflow_dispatch:
+    inputs:
+      hugoVersion:
+        description: 'Hugo version to use to generate site.'
+        required: false
+        default: '0.104.2'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - name: Checkout blog
+        uses: actions/checkout@v3
+        with:
+          repository: 'inianv/blog'
+          submodules: true
+          fetch-depth: 0
+
+      - name: Checkout legends2k.github.io
+        uses: actions/checkout@v3
+        with:
+          path: public
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: "${{ github.event.inputs.logLevel }}"
+
+      - name: Generate
+        run: hugo --minify
+
+      - name: Add changes and commit
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          cd public
+          git add -vA
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@github.com"
+          git commit -m "${COMMIT_MSG}" && git push -u origin master || echo
